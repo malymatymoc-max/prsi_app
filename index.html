@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Prší</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.png">
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Prší">
+  <link rel="apple-touch-icon" href="icon-1024.png">
+  <style>
+    :root {
+      --panel: rgba(11, 19, 34, 0.9);
+      --panel-2: rgba(18, 29, 49, 0.96);
+      --line: rgba(148, 163, 184, 0.14);
+      --text: #edf4ff;
+      --muted: #91a2bd;
+      --accent: #60a5fa;
+      --danger: #f87171;
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+      --radius: 24px;
+      --bg1: #020617;
+      --bg2: #081120;
+      --bg3: #0b1322;
+    }
+    * { box-sizing: border-box; }
+    html {
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(96,165,250,.14), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(34,197,94,.08), transparent 22%),
+        linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 42%, var(--bg3) 100%);
+      -webkit-text-size-adjust: 100%;
+      overscroll-behavior-x: none;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(96,165,250,.14), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(34,197,94,.08), transparent 22%),
+        linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 42%, var(--bg3) 100%);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .hidden { display: none !important; }
+    .shell { width: min(1440px, calc(100vw - 56px)); max-width: 100%; margin: 28px auto; min-width: 0; }
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); backdrop-filter: blur(14px); overflow: hidden; min-width: 0; }
+    .header {
+      display: flex; justify-content: space-between; align-items: center; gap: 20px;
+      padding: 26px 28px; margin-bottom: 22px;
+      background: linear-gradient(135deg, rgba(96,165,250,.16), rgba(11,19,34,.82)), var(--panel);
+      position: relative; overflow: hidden;
+    }
+    .header::after {
+      content: ""; position: absolute; width: 220px; height: 220px; right: -70px; top: -100px;
+      border-radius: 999px; background: radial-gradient(circle, rgba(96,165,250,.16), transparent 70%);
+      pointer-events: none;
+    }
+    .header h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: -0.04em; line-height: 1; position: relative; z-index: 1; }
+    .header p { margin: 0; color: var(--muted); max-width: 760px; line-height: 1.5; position: relative; z-index: 1; }
+    .pill { padding: 10px 14px; border-radius: 999px; background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.22); color: #cfe4ff; font-weight: 700; white-space: nowrap; position: relative; z-index: 1; }
+    .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; min-width: 0; }
+    .section-head h2, .section-head h3 { margin: 0; font-size: 18px; letter-spacing: -0.02em; }
+    .section-head span { color: var(--muted); font-size: 13px; text-align: right; }
+    label { display: block; margin: 0 0 8px; color: #cdd8ea; font-size: 13px; font-weight: 700; }
+    .button, .field, .select { width: 100%; max-width: 100%; border-radius: 16px; font: inherit; font-size: 16px; transition: .18s ease; outline: none; min-width: 0; }
+    .button { border: none; cursor: pointer; font-weight: 800; padding: 14px 16px; color: white; background: linear-gradient(135deg, var(--accent), #2563eb); box-shadow: 0 12px 30px rgba(37,99,235,.22); }
+    .button:hover { transform: translateY(-1px); }
+    .button:active { transform: translateY(0); }
+    .button.secondary { background: rgba(12, 20, 35, 0.92); border: 1px solid var(--line); box-shadow: none; color: var(--text); }
+    .button.ghost { background: rgba(248, 113, 113, 0.1); color: #fecaca; border: 1px solid rgba(248, 113, 113, 0.18); box-shadow: none; }
+    .field, .select {
+      border: 1px solid rgba(148,163,184,.18);
+      background: linear-gradient(180deg, rgba(10,18,34,.96), rgba(7,14,27,.96));
+      color: var(--text); padding: 14px 15px; box-shadow: inset 0 1px 0 rgba(255,255,255,.03);
+      appearance: none; -webkit-appearance: none;
+    }
+    .field:focus, .select:focus { border-color: rgba(96,165,250,.68); box-shadow: 0 0 0 4px rgba(96,165,250,.14), inset 0 1px 0 rgba(255,255,255,.04); }
+    .home-layout, .dashboard-layout { display: grid; grid-template-columns: 390px minmax(0, 1fr); gap: 20px; align-items: start; min-width: 0; }
+    .panel { padding: 24px; min-width: 0; }
+    .sidebar { padding: 22px; position: sticky; top: 24px; min-width: 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .create-step { display: none; }
+    .create-step.active { display: block; animation: fade .2s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .player-name-row { display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: center; margin-bottom: 10px; }
+    .player-chip { height: 46px; border-radius: 14px; display: grid; place-items: center; background: rgba(96,165,250,.12); border: 1px solid rgba(96,165,250,.18); color: #cfe4ff; font-weight: 800; }
+    .note { margin-top: 12px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .games-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .game-tile { padding: 20px; border-radius: 22px; background: linear-gradient(180deg, rgba(18,29,49,.96), rgba(9,17,31,.98)); border: 1px solid rgba(148,163,184,.14); cursor: pointer; transition: .18s ease; position: relative; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,.03); min-width: 0; }
+    .game-tile:hover { transform: translateY(-2px); border-color: rgba(96,165,250,.28); }
+    .game-tile::after { content: ""; position: absolute; width: 120px; height: 120px; right: -40px; bottom: -40px; border-radius: 999px; background: radial-gradient(circle, rgba(96,165,250,.14), transparent 65%); pointer-events: none; }
+    .game-top { display: flex; justify-content: space-between; align-items: start; gap: 14px; margin-bottom: 14px; min-width: 0; }
+    .game-name { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 6px; word-break: break-word; }
+    .meta { color: var(--muted); font-size: 13px; line-height: 1.45; word-break: break-word; }
+    .tiny-pill { padding: 8px 10px; border-radius: 999px; background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.18); color: #bbf7d0; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .tile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px; }
+    .mini-stat { padding: 12px; border-radius: 16px; background: rgba(8,16,30,.72); border: 1px solid rgba(148,163,184,.1); }
+    .mini-stat .k { font-size: 11px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+    .mini-stat .v { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+    .stat-box { padding: 16px; border-radius: 18px; background: var(--panel-2); border: 1px solid var(--line); }
+    .stat-box .k { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .stat-box .v { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; }
+    .players-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .player-card { padding: 18px; border-radius: 22px; background: linear-gradient(180deg, rgba(16,27,46,.98), rgba(8,16,30,.98)); border: 1px solid rgba(148,163,184,.14); position: relative; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,.03); min-width: 0; min-height: 190px; display: flex; flex-direction: column; justify-content: space-between; }
+    .player-card::after { content: ""; position: absolute; inset: auto -40px -40px auto; width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle, rgba(96,165,250,.14), transparent 60%); pointer-events: none; }
+    .player-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; min-width: 0; }
+    .player-title { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+    .avatar { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; font-weight: 900; background: rgba(96,165,250,.12); color: #cfe4ff; border: 1px solid rgba(96,165,250,.2); flex: 0 0 auto; }
+    .player-name { font-weight: 800; font-size: 18px; line-height: 1.15; word-break: break-word; margin-bottom: 4px; }
+    .sub-line { font-size: 13px; color: var(--muted); word-break: break-word; line-height: 1.35; }
+    .player-status { font-size: 12px; line-height: 1.3; margin-top: 8px; }
+    .live-points { font-size: 34px; font-weight: 900; letter-spacing: -0.04em; line-height: 1; margin-bottom: 6px; }
+    .ok-text { color: #86efac; }
+    .danger-text { color: #fca5a5; }
+    .money-plus { color: #86efac; font-weight: 800; }
+    .money-minus { color: #fca5a5; font-weight: 800; }
+    .table-wrap { overflow: hidden; border-radius: 20px; border: 1px solid var(--line); background: rgba(8,16,30,.72); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid rgba(148,163,184,.1); }
+    th { color: #cbd5e1; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; background: rgba(8,16,30,.92); }
+    tr:last-child td { border-bottom: none; }
+    .rank { display: inline-grid; width: 30px; height: 30px; place-items: center; border-radius: 10px; background: rgba(96,165,250,.12); color: #cfe4ff; font-weight: 900; }
+    .history-list { display: grid; gap: 12px; max-height: 360px; overflow: auto; padding-right: 4px; }
+    .history-item { padding: 16px; border-radius: 18px; background: linear-gradient(180deg, rgba(9,18,33,.82), rgba(8,16,30,.66)); border: 1px solid rgba(148,163,184,.14); line-height: 1.5; }
+    .history-item strong { display: block; margin-bottom: 6px; }
+    .empty-state { padding: 28px; border-radius: 22px; border: 1px dashed rgba(148,163,184,.2); background: rgba(8,16,30,.5); color: var(--muted); text-align: center; }
+    .mobile-board { display: none; }
+    @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 900px) {
+      .shell { width: 100%; margin: 0; padding: 10px; }
+      .header { flex-direction: column; align-items: flex-start; padding: 18px; gap: 12px; margin-bottom: 14px; }
+      .header h1 { font-size: 28px; }
+      .header p { font-size: 14px; max-width: none; }
+      .home-layout, .dashboard-layout { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+      .panel, .sidebar { padding: 16px; position: static; top: auto; width: 100%; }
+      .games-grid { grid-template-columns: 1fr; gap: 12px; }
+      .players-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .history-list { max-height: none; overflow: visible; padding-right: 0; }
+      .game-name { font-size: 20px; }
+      .mini-stat { padding: 10px; }
+      .mini-stat .v { font-size: 18px; }
+      .live-points { font-size: 30px; }
+      .player-name { font-size: 17px; }
+      .player-card { min-height: 180px; }
+    }
+    @media (max-width: 560px) {
+      .shell { padding: 8px; }
+      .card { border-radius: 18px; }
+      .header { padding: 16px; }
+      .header h1 { font-size: 24px; }
+      .pill { padding: 8px 12px; font-size: 13px; }
+      .section-head { align-items: flex-start; flex-direction: column; gap: 6px; }
+      .section-head span { text-align: left; }
+      .button, .field, .select { min-height: 50px; font-size: 16px; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .player-name-row { grid-template-columns: 44px 1fr; }
+      .player-chip, .avatar { border-radius: 12px; }
+      .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+      .stat-box { padding: 12px; border-radius: 16px; }
+      .stat-box .v { font-size: 22px; }
+      .player-card { padding: 14px; border-radius: 18px; min-height: 170px; }
+      .player-head { align-items: flex-start; justify-content: flex-start; gap: 10px; margin-bottom: 12px; }
+      .player-title { width: 100%; }
+      .game-top { flex-direction: column; }
+      .live-points { font-size: 28px; }
+      .player-name { font-size: 15px; }
+      .sub-line { font-size: 12px; }
+      .player-status { font-size: 11px; }
+      .avatar { width: 38px; height: 38px; font-size: 14px; }
+      .history-item { padding: 14px; border-radius: 16px; }
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 16px; }
+      table { min-width: 680px; }
+    }
+    @media (max-width: 430px) {
+      .header p { display: none; }
+      .mobile-board { display: block; }
+      .desktop-board { display: none; }
+      .stat-box .k { font-size: 11px; }
+      .stat-box .v { font-size: 20px; }
+      .players-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .player-card { min-height: 162px; }
+      .mobile-board-list { display: grid; gap: 10px; margin-top: 10px; }
+      .mobile-row { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; align-items: center; padding: 12px 14px; border-bottom: 1px solid rgba(148,163,184,.1); }
+      .mobile-row:last-child { border-bottom: none; }
+      .mobile-rank { color: #cfe4ff; font-weight: 800; }
+      .mobile-points { font-weight: 800; }
+      .compact-label { font-size: 12px; color: var(--muted); }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="header card">
+      <div>
+        <h1>Prší</h1>
+        <p>Správa více rozehraných her najednou. Vybereš hru a uvnitř máš přehled kola, skóre i peníze.</p>
+      </div>
+      <div class="pill" id="globalStatus">0 aktivních her</div>
+    </section>
+
+    <section id="homeView" class="home-layout">
+      <aside class="panel card">
+        <div class="section-head">
+          <h2>Nová hra</h2>
+          <span>Více her najednou</span>
+        </div>
+
+        <div id="createStep1" class="create-step active">
+          <label for="gameName">Název hry</label>
+          <input id="gameName" class="field" type="text" placeholder="Např. Čtvrteční prší" maxlength="28" />
+
+          <label for="playerCount">Počet hráčů</label>
+          <select id="playerCount" class="select">
+            <option value="2">2 hráči</option>
+            <option value="3">3 hráči</option>
+            <option value="4" selected>4 hráči</option>
+            <option value="5">5 hráčů</option>
+            <option value="6">6 hráčů</option>
+            <option value="7">7 hráčů</option>
+            <option value="8">8 hráčů</option>
+          </select>
+
+          <div class="grid-2">
+            <div>
+              <label for="pointLimit">Limit kola</label>
+              <input id="pointLimit" class="field" type="number" min="1" value="300" />
+            </div>
+            <div>
+              <label for="stake">Sázka za kolo</label>
+              <input id="stake" class="field" type="number" min="0" value="50" />
+            </div>
+          </div>
+
+          <button class="button" id="toNamesBtn">Pokračovat na jména</button>
+          <div class="note">Záporné body nejsou povolené. Data se ukládají automaticky.</div>
+        </div>
+
+        <div id="createStep2" class="create-step">
+          <div class="section-head" style="margin-top:4px;">
+            <h3>Jména hráčů</h3>
+            <span id="countLabel"></span>
+          </div>
+          <div id="nameInputs"></div>
+          <div class="grid-2">
+            <button class="button secondary" id="backBtn">Zpět</button>
+            <button class="button" id="createGameBtn">Vytvořit hru</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="panel card">
+        <div class="section-head">
+          <h2>Rozehrané hry</h2>
+          <span>Kliknutím otevřeš detail</span>
+        </div>
+        <div class="grid-2" style="margin-bottom:16px;">
+          <button class="button secondary" id="exportBtn">Export her</button>
+          <label class="button secondary" for="importInput" style="display:flex;align-items:center;justify-content:center;cursor:pointer;">Import her</label>
+          <input id="importInput" type="file" accept="application/json" class="hidden" />
+        </div>
+        <div id="gamesGrid" class="games-grid"></div>
+      </main>
+    </section>
+
+    <section id="dashboardView" class="dashboard-layout hidden">
+      <aside class="sidebar card">
+        <div class="section-head">
+          <h2 id="dashboardGameName">Hra</h2>
+          <span id="dashboardMeta">—</span>
+        </div>
+
+        <div id="mobileGameSummary" class="sub-line" style="margin:-2px 0 14px; font-size:14px;"></div>
+
+        <button class="button secondary" id="backHomeBtn" style="margin-bottom:14px;">← Zpět na přehled her</button>
+
+        <div class="section-head" style="margin-top:8px;">
+          <h3>Zápis hry</h3>
+          <span id="gameRoundLabel">Kolo 1</span>
+        </div>
+
+        <div id="scoreInputs"></div>
+
+        <label for="closeType">Jak bylo zavřeno</label>
+        <select id="closeType" class="select">
+          <option value="1">Normálně</option>
+          <option value="2">Svrškem (2×)</option>
+          <option value="4">Červeným svrškem (4×)</option>
+        </select>
+
+        <div class="grid-2">
+          <button class="button" id="addGameBtn">Přidat hru</button>
+          <button class="button ghost" id="deleteGameBtn">Smazat hru</button>
+        </div>
+      </aside>
+
+      <main style="display:grid; gap:20px; min-width:0;">
+        <section class="panel card">
+          <div class="section-head">
+            <h3>Aktuální přehled kola</h3>
+            <span id="liveSubtitle">—</span>
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-box">
+              <div class="k">Aktivní kolo</div>
+              <div class="v" id="statRound">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="k">Limit</div>
+              <div class="v" id="statLimit">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="k">Sázka</div>
+              <div class="v" id="statStake">—</div>
+            </div>
+            <div class="stat-box">
+              <div class="k">Odehraných her</div>
+              <div class="v" id="statGames">0</div>
+            </div>
+          </div>
+
+          <div id="playersBoard" class="players-grid" style="margin-top:18px;"></div>
+        </section>
+
+        <section class="panel card desktop-board">
+          <div class="section-head">
+            <h3>Pohár konstruktérů</h3>
+            <span>Seřazeno od nejvyššího skóre</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Hráč</th>
+                  <th>Body celkem</th>
+                  <th>Vyhraná kola</th>
+                  <th>Prohraná kola</th>
+                  <th>Bilance peněz</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel card mobile-board">
+          <div class="section-head">
+            <h3>Pohár konstruktérů</h3>
+            <span>Kompaktní mobilní přehled</span>
+          </div>
+          <div id="mobileLeaderboard" class="mobile-board-list"></div>
+        </section>
+
+        <section class="panel card">
+          <div class="section-head">
+            <h3>Historie kol</h3>
+            <span>Kdo komu platil</span>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'prsi_app_state_v1';
+    const state = { games: [], currentGameId: null };
+    const els = {
+      homeView: document.getElementById('homeView'),
+      dashboardView: document.getElementById('dashboardView'),
+      globalStatus: document.getElementById('globalStatus'),
+      createStep1: document.getElementById('createStep1'),
+      createStep2: document.getElementById('createStep2'),
+      gameName: document.getElementById('gameName'),
+      playerCount: document.getElementById('playerCount'),
+      pointLimit: document.getElementById('pointLimit'),
+      stake: document.getElementById('stake'),
+      toNamesBtn: document.getElementById('toNamesBtn'),
+      backBtn: document.getElementById('backBtn'),
+      createGameBtn: document.getElementById('createGameBtn'),
+      countLabel: document.getElementById('countLabel'),
+      nameInputs: document.getElementById('nameInputs'),
+      gamesGrid: document.getElementById('gamesGrid'),
+      backHomeBtn: document.getElementById('backHomeBtn'),
+      deleteGameBtn: document.getElementById('deleteGameBtn'),
+      dashboardGameName: document.getElementById('dashboardGameName'),
+      dashboardMeta: document.getElementById('dashboardMeta'),
+      mobileGameSummary: document.getElementById('mobileGameSummary'),
+      scoreInputs: document.getElementById('scoreInputs'),
+      closeType: document.getElementById('closeType'),
+      addGameBtn: document.getElementById('addGameBtn'),
+      gameRoundLabel: document.getElementById('gameRoundLabel'),
+      liveSubtitle: document.getElementById('liveSubtitle'),
+      statRound: document.getElementById('statRound'),
+      statLimit: document.getElementById('statLimit'),
+      statStake: document.getElementById('statStake'),
+      statGames: document.getElementById('statGames'),
+      playersBoard: document.getElementById('playersBoard'),
+      leaderboardBody: document.getElementById('leaderboardBody'),
+      mobileLeaderboard: document.getElementById('mobileLeaderboard'),
+      historyList: document.getElementById('historyList'),
+      exportBtn: document.getElementById('exportBtn'),
+      importInput: document.getElementById('importInput')
+    };
+
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    function exportGames() {
+      const payload = { exportedAt: new Date().toISOString(), app: 'prsi', version: 1, data: state };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const date = new Date().toISOString().slice(0, 10);
+      a.href = url; a.download = `prsi-export-${date}.json`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    function importGames(file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          const importedState = parsed?.data;
+          if (!importedState || !Array.isArray(importedState.games)) {
+            alert('Soubor nemá správný formát.'); return;
+          }
+          state.games = importedState.games;
+          state.currentGameId = importedState.currentGameId || null;
+          saveState(); updateViews(); buildScoreInputs();
+          alert('Hry byly úspěšně importované.');
+        } catch (error) {
+          console.error(error);
+          alert('Import se nepodařil. Zkontroluj prosím JSON soubor.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.games)) return;
+        state.games = parsed.games;
+        state.currentGameId = parsed.currentGameId || null;
+      } catch (error) {
+        console.error('Nepodařilo se načíst uložený stav aplikace.', error);
+      }
+    }
+
+    function getCurrentGame() { return state.games.find(g => g.id === state.currentGameId) || null; }
+    function showCreateStep(step) { els.createStep1.classList.toggle('active', step === 1); els.createStep2.classList.toggle('active', step === 2); }
+
+    function buildNameInputs() {
+      const count = Math.max(2, Number(els.playerCount.value));
+      els.countLabel.textContent = `${count} hráčů`;
+      els.nameInputs.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const row = document.createElement('div');
+        row.className = 'player-name-row';
+        row.innerHTML = `
+          <div class="player-chip">${i + 1}</div>
+          <input class="field player-name-input" type="text" placeholder="Jméno hráče ${i + 1}" maxlength="20" />
+        `;
+        els.nameInputs.appendChild(row);
+      }
+    }
+
+    function resetCreator() {
+      els.gameName.value = '';
+      els.playerCount.value = '4';
+      els.pointLimit.value = 300;
+      els.stake.value = 50;
+      buildNameInputs();
+      showCreateStep(1);
+    }
+
+    function createGame() {
+      const names = [...document.querySelectorAll('.player-name-input')].map((input, i) => input.value.trim() || `Hráč ${i + 1}`);
+      const name = els.gameName.value.trim() || `Hra ${state.games.length + 1}`;
+      const game = {
+        id: Date.now().toString(),
+        name,
+        playerCount: names.length,
+        pointLimit: Math.max(1, Number(els.pointLimit.value) || 300),
+        stake: Math.max(0, Number(els.stake.value) || 0),
+        roundNumber: 1,
+        totalGames: 0,
+        history: [],
+        players: names.map((playerName, i) => ({
+          id: i + 1, name: playerName, roundPoints: 0, totalPoints: 0, roundsWon: 0, roundsLost: 0, money: 0
+        }))
+      };
+      state.games.unshift(game);
+      state.currentGameId = game.id;
+      buildScoreInputs(); updateViews(); saveState(); resetCreator();
+    }
+
+    function openGame(id) {
+      state.currentGameId = id;
+      buildScoreInputs(); updateViews(); saveState();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteCurrentGame() {
+      const game = getCurrentGame();
+      if (!game) return;
+      state.games = state.games.filter(g => g.id !== game.id);
+      state.currentGameId = null;
+      updateViews(); saveState();
+    }
+
+    function buildScoreInputs() {
+      const game = getCurrentGame();
+      if (!game) { els.scoreInputs.innerHTML = ''; return; }
+      els.scoreInputs.innerHTML = '';
+      game.players.forEach((player, index) => {
+        const wrap = document.createElement('div');
+        wrap.style.marginBottom = '10px';
+        wrap.innerHTML = `
+          <label for="score_${index}">${player.name}</label>
+          <input id="score_${index}" class="field round-score" type="number" min="0" inputmode="numeric" value="0" />
+        `;
+        els.scoreInputs.appendChild(wrap);
+      });
+    }
+
+    function addGameScore() {
+      const game = getCurrentGame();
+      if (!game) return;
+      const multiplier = Number(els.closeType.value);
+      const scores = [...document.querySelectorAll('.round-score')].map(input => Math.max(0, Number(input.value) || 0));
+      game.players.forEach((player, i) => {
+        const gained = scores[i] * multiplier;
+        player.roundPoints += gained;
+        player.totalPoints += gained;
+      });
+      game.totalGames += 1;
+      const overLimitPlayers = game.players.filter(player => player.roundPoints > game.pointLimit);
+      if (overLimitPlayers.length > 0) finishRound(game, overLimitPlayers);
+      [...document.querySelectorAll('.round-score')].forEach(input => input.value = 0);
+      els.closeType.value = '1';
+      updateViews(); saveState();
+    }
+
+    function finishRound(game, overLimitPlayers) {
+      const loser = [...overLimitPlayers].sort((a, b) => b.roundPoints - a.roundPoints)[0];
+      const winner = [...game.players].sort((a, b) => a.roundPoints - b.roundPoints)[0];
+      loser.roundsLost += 1;
+      winner.roundsWon += 1;
+      loser.money -= game.stake;
+      winner.money += game.stake;
+      game.history.unshift({
+        round: game.roundNumber,
+        loser: loser.name,
+        loserScore: loser.roundPoints,
+        winner: winner.name,
+        winnerScore: winner.roundPoints,
+        stake: game.stake
+      });
+      game.players.forEach(player => player.roundPoints = 0);
+      game.roundNumber += 1;
+    }
+
+    function renderGamesList() {
+      els.globalStatus.textContent = `${state.games.length} ${state.games.length === 1 ? 'aktivní hra' : state.games.length >= 2 && state.games.length <= 4 ? 'aktivní hry' : 'aktivních her'}`;
+      if (state.games.length === 0) {
+        els.gamesGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Ještě tu není žádná rozehraná hra. Vytvoř ji vlevo.</div>';
+        return;
+      }
+      els.gamesGrid.innerHTML = state.games.map(game => {
+        const leader = [...game.players].sort((a, b) => b.totalPoints - a.totalPoints)[0];
+        return `
+          <article class="game-tile" data-id="${game.id}">
+            <div class="game-top">
+              <div>
+                <div class="game-name">${game.name}</div>
+                <div class="meta">${game.playerCount} hráčů · limit ${game.pointLimit} · sázka ${game.stake} Kč</div>
+              </div>
+              <div class="tiny-pill">Kolo ${game.roundNumber}</div>
+            </div>
+            <div class="meta">Vede: <strong>${leader.name}</strong> (${leader.totalPoints} bodů)</div>
+            <div class="tile-stats">
+              <div class="mini-stat"><div class="k">Her</div><div class="v">${game.totalGames}</div></div>
+              <div class="mini-stat"><div class="k">Kol</div><div class="v">${Math.max(0, game.roundNumber - 1)}</div></div>
+              <div class="mini-stat"><div class="k">Historie</div><div class="v">${game.history.length}</div></div>
+            </div>
+          </article>
+        `;
+      }).join('');
+      document.querySelectorAll('.game-tile').forEach(tile => {
+        tile.addEventListener('click', () => openGame(tile.dataset.id));
+      });
+    }
+
+    function renderDashboard() {
+      const game = getCurrentGame();
+      if (!game) return;
+      els.dashboardGameName.textContent = game.name;
+      els.dashboardMeta.textContent = `${game.playerCount} hráčů`;
+      els.mobileGameSummary.textContent = `Limit ${game.pointLimit} bodů · sázka ${game.stake} Kč`;
+      els.gameRoundLabel.textContent = `Kolo ${game.roundNumber}`;
+      els.liveSubtitle.textContent = `Sleduješ body v kole ${game.roundNumber}`;
+      els.statRound.textContent = game.roundNumber;
+      els.statLimit.textContent = game.pointLimit;
+      els.statStake.textContent = `${game.stake} Kč`;
+      els.statGames.textContent = game.totalGames;
+
+      els.playersBoard.innerHTML = game.players.map(player => {
+        const distance = game.pointLimit - player.roundPoints;
+        const statusClass = distance >= 0 ? 'ok-text' : 'danger-text';
+        const statusText = distance >= 0 ? `Do limitu zbývá ${distance}` : `Přes limit o ${Math.abs(distance)}`;
+        return `
+          <div class="player-card">
+            <div>
+              <div class="player-head">
+                <div class="player-title">
+                  <div class="avatar">${player.name.slice(0, 1).toUpperCase()}</div>
+                  <div>
+                    <div class="player-name">${player.name}</div>
+                    <div class="sub-line">Celkem ${player.totalPoints} bodů</div>
+                  </div>
+                </div>
+              </div>
+              <div class="player-status ${statusClass}">${statusText}</div>
+            </div>
+            <div>
+              <div class="live-points">${player.roundPoints}</div>
+              <div class="sub-line">bodů v aktuálním kole</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const sorted = [...game.players].sort((a, b) => b.totalPoints - a.totalPoints);
+      els.leaderboardBody.innerHTML = sorted.map((player, idx) => `
+        <tr>
+          <td><span class="rank">${idx + 1}</span></td>
+          <td>${player.name}</td>
+          <td>${player.totalPoints}</td>
+          <td>${player.roundsWon}</td>
+          <td>${player.roundsLost}</td>
+          <td class="${player.money >= 0 ? 'money-plus' : 'money-minus'}">${player.money >= 0 ? '+' : ''}${player.money}</td>
+        </tr>
+      `).join('');
+
+      els.mobileLeaderboard.innerHTML = sorted.map((player, idx) => `
+        <div class="card" style="border-radius:16px; box-shadow:none; background:rgba(8,16,30,.55);">
+          <div class="mobile-row">
+            <div class="mobile-rank">${idx + 1}</div>
+            <div>
+              <div style="font-weight:800;">${player.name}</div>
+              <div class="compact-label">Výhry ${player.roundsWon} · Prohry ${player.roundsLost}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="mobile-points">${player.totalPoints}</div>
+              <div class="compact-label ${player.money >= 0 ? 'money-plus' : 'money-minus'}">${player.money >= 0 ? '+' : ''}${player.money} Kč</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      els.historyList.innerHTML = game.history.length ? game.history.map(item => `
+        <div class="history-item">
+          <strong>Kolo ${item.round}</strong>
+          Prohrál <span class="money-minus">${item.loser}</span> s ${item.loserScore} body.<br>
+          Vyhrál <span class="money-plus">${item.winner}</span> s ${item.winnerScore} body.<br>
+          Platba: <strong>${item.loser} → ${item.winner}</strong> ve výši ${item.stake} Kč.
+        </div>
+      `).join('') : '<div class="empty-state">Po dokončení prvního kola se sem zapíše výsledek.</div>';
+    }
+
+    function updateViews() {
+      const hasOpenGame = Boolean(getCurrentGame());
+      els.homeView.classList.toggle('hidden', hasOpenGame);
+      els.dashboardView.classList.toggle('hidden', !hasOpenGame);
+      renderGamesList();
+      if (hasOpenGame) renderDashboard();
+    }
+
+    els.toNamesBtn.addEventListener('click', () => {
+      buildNameInputs();
+      showCreateStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    els.backBtn.addEventListener('click', () => showCreateStep(1));
+    els.createGameBtn.addEventListener('click', createGame);
+    els.playerCount.addEventListener('change', buildNameInputs);
+    els.backHomeBtn.addEventListener('click', () => {
+      state.currentGameId = null;
+      updateViews();
+      saveState();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    els.addGameBtn.addEventListener('click', addGameScore);
+    els.deleteGameBtn.addEventListener('click', deleteCurrentGame);
+    els.exportBtn.addEventListener('click', exportGames);
+    els.importInput.addEventListener('change', (event) => {
+      importGames(event.target.files[0]);
+      event.target.value = '';
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    loadState();
+    buildNameInputs();
+    renderGamesList();
+    updateViews();
+  </script>
+</body>
+</html>
